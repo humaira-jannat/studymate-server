@@ -19,16 +19,20 @@ const client = new MongoClient(uri, {
   },
 });
 
-let partnersCollection;
-let connectionsCollection;
+const db = client.db("studymate");
+const partnersCollection = db.collection("partners");
+const connectionsCollection = db.collection("connections");
 
-// Connect to MongoDB once
-client.connect().then(() => {
-  const db = client.db("studymate");
-  partnersCollection = db.collection("partners");
-  connectionsCollection = db.collection("connections");
-  console.log("Connected to MongoDB successfully!");
-}).catch(console.error);
+// Connect to MongoDB
+async function connectDB() {
+  try {
+    await client.connect();
+    console.log("Connected to MongoDB successfully!");
+  } catch (err) {
+    console.error("MongoDB connection error:", err);
+  }
+}
+connectDB();
 
 // Root route
 app.get("/", (req, res) => {
