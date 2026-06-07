@@ -21,8 +21,6 @@ async function run() {
     const partnersCollection = db.collection("partners");
     const connectionsCollection = db.collection("connections");
 
-    // ========== PARTNERS ==========
-
     // GET all partners with search & sort
     app.get("/partners", async (req, res) => {
       const { search, sort } = req.query;
@@ -30,12 +28,12 @@ async function run() {
       if (search) {
         query.subject = { $regex: search, $options: "i" };
       }
+      if (sort && sort !== "rating") {
+        query.experienceLevel = sort;
+      }
       let cursor = partnersCollection.find(query);
       if (sort === "rating") {
         cursor = cursor.sort({ rating: -1 });
-      } else if (sort) {
-        query.experienceLevel = sort;
-        cursor = partnersCollection.find(query);
       }
       const result = await cursor.toArray();
       res.send(result);
@@ -86,8 +84,6 @@ async function run() {
       res.send(result);
     });
 
-    // ========== CONNECTIONS ==========
-
     // GET connections by email
     app.get("/connections", async (req, res) => {
       const { email } = req.query;
@@ -96,7 +92,7 @@ async function run() {
       res.send(result);
     });
 
-    // POST send partner request (with duplicate check)
+    // POST send partner request with duplicate check
     app.post("/connections", async (req, res) => {
       const connection = req.body;
       const existing = await connectionsCollection.findOne({
@@ -129,6 +125,7 @@ async function run() {
       res.send(result);
     });
 
+    // Root route
     app.get("/", (req, res) => res.send("StudyMate server is running!"));
 
     console.log("Connected to MongoDB successfully!");
@@ -139,4 +136,5 @@ async function run() {
 
 run();
 
-app.listen(port, () => console.log(`Server running on port ${port}`));
+// Export for Vercel
+module.exports = app;
